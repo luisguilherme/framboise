@@ -1,14 +1,21 @@
 from collections import Counter
 import logging
 
+def find(list, value):
+    try: 
+        return list.index(value)
+    except ValueError:
+        return None
+        
 class DefaultSorter(object):
     def __init__(self, langs='all', weight=1):
         print "Available languages: ", langs
         self.langs = langs.split(',')
  
+
     def bestfn(self, subentry):
-        idx = self.langs.index(subentry['SubLanguageID'])
-        value = idx if idx >= 0 else len(self.langs)
+        idx = find(self.langs, subentry['SubLanguageID'])
+        value = idx if idx is not None else len(self.langs)
         return value
 
 
