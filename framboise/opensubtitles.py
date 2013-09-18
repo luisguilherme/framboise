@@ -1,6 +1,7 @@
 from exceptions import StandardError
 import gzip
 import logging
+from operator import itemgetter
 import os
 from subprocess import Popen, PIPE
 import urllib2
@@ -9,6 +10,7 @@ import zlib
 
 import chksum
 from sorting import DefaultSorter
+from util import map_
 
 USER_AGENT = 'OS Test User Agent'
 XMLRPC_URI = 'http://api.opensubtitles.org/xml-rpc'
@@ -25,11 +27,15 @@ class CredentialsError(StandardError):
 
 class Downloader():
     def __init__(self, langs='all', sorter=None, cr_user='', cr_pass='',
-                 os_language='en'):
+                 os_language='en', get_other=False, overwrite=False,
+                 save_all=False):
         self.langs = langs
         self.cr_user = cr_user
         self.cr_pass = cr_pass
         self.os_language = os_language
+        self.get_other = get_other
+        self.overwrite = overwrite
+        self.save_all = save_all
         
         self.sorter = sorter if sorter is not None else DefaultSorter(langs)
         
@@ -74,35 +80,52 @@ class Downloader():
         logging.info("Found {} results".format(len(result['data'])))
         return result['data']
 
+    def save_subtitle(self, subtitle, file_root, prefix=''):
+        file_name = '.'.join(
+            filter(None,
+                   [file_root,prefix,subtitle['SubFormat']]))
+
+        print "Found subtitle in {lang} for movie {mn}:\n {link} => {d}"\
+            .format(lang=subtitle['LanguageName'], mn=subtitle['MovieName'],
+                    link=subtitle['SubDownloadLink'], 
+                    d=file_name)
+        
+        if os.path.exists(file_name) and not self.overwrite:
+            return None
+
+        with open(file_name, 'w') as subfile:
+            gzsub = urllib2.urlopen(subtitle['SubDownloadLink'])
+            subfile.write(zlib.decompress(gzsub.read(), 16+zlib.MAX_WBITS))
+        return file_name
+
     def get_best_sub(self, movie_file):
         file_root, movie_ext = os.path.splitext(movie_file)
+        file_exists = False
 
         if any(map(os.path.exists, 
                    (file_root + '.' + subext for subext in STYPES))):
-             logging.warning("Subtitle exists for movie {}".format(
-                 os.path.basename(movie_file)))
-             print "Subtitle exists for movie {}".format(
-                 os.path.basename(movie_file))
-
-             return None
+            logging.warning("Subtitle exists for movie {}".format(
+                os.path.basename(movie_file)))
+            print "Subtitle exists for movie {}".format(
+                os.path.basename(movie_file))
+            file_exists = True
+            if not (self.overwrite or self.get_other):
+                return None
 
         results = self.get_subs(movie_file)
         if not results:
             return None
 
         self.sorter.movie, _ = os.path.splitext(os.path.basename(movie_file))
-        best = min(results, key=self.sorter.bestfn)
+        if self.save_all or self.get_other:
+            lmap = map_(results, keyfn=itemgetter('SubLanguageID'))
+            bestl = {k: min(lmap[k], key=self.sorter.bestfn)
+                     for k in lmap}
+            for lang,best in bestl.iteritems(): 
+                self.save_subtitle(best, file_root, prefix=lang)
         
-        print "Found subtitle in {lang} for movie {mn}:\n {link} => {d}"\
-             .format(lang=best['LanguageName'], mn=best['MovieName'],
-                     link=best['SubDownloadLink'], 
-                     d=file_root + '.' + best['SubFormat'])
-
-        file_name = file_root + '.' + best['SubFormat'] 
-
-        with open(file_name, 'w') as subfile:
-            gzsub = urllib2.urlopen(best['SubDownloadLink'])
-            subfile.write(zlib.decompress(gzsub.read(), 16+zlib.MAX_WBITS))
-        return file_name
+        best = min(results, key=self.sorter.bestfn)
+        if not file_exists or self.overwrite:
+            self.save_subtitle(best, file_root)
 
 
