@@ -3,10 +3,10 @@ framboise
 
 Utility to download subtitles timely from opensubtitles.org
 
-Usage
------
+Basic Usage
+------------
 
-	framboise <videos directory> <language ID,language ID,...>
+	framboise <videos files and/or directories> -l lang,lang,...
 
 framboise check your videos directory recursivelly for all videos, find 
 all subtitles from opensubtitles that match each video and then choses 
@@ -14,7 +14,7 @@ the best one for you.
 
 You can add several language IDs to framboise. Example
 
-	framboise Videos/Movies por,pob,esp,oci,eng
+	framboise Videos/Movies -l por,pob,esp,oci,eng
 
 This will look for every video under `Videos/Movies` and find all 
 subtitles in Portuguese, Brazilian Portuguese, Spanish, Occitan and 
@@ -39,7 +39,7 @@ Why the name?
 -------------
 
 I needed to have a lightweight tool to automatically download subtitles 
-to movies I had set up on my raspberry pi. raspberry
+to movies I had set up on my raspberry pi. Framboise is raspberry in French.
 
 Interesting ideas to implement
 ------------------------------
@@ -48,6 +48,4 @@ Interesting ideas to implement
    preferred language among the choices)
 2. Also, if a subtitle is found, send it to opensubtitles if not there
 3. A flexget plugin to download subtitles based on this
-4. Accept files or directories as parameter, and act accordingly
-5. Accept non-recursive directory functioning
 
