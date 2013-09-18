@@ -29,7 +29,7 @@ def main(argv=None):
     parser.add_argument('locations', metavar='file or dir', type=str,
                         nargs='+', help='files or dirs you want to scan '
                         'in order to find subtitles')
-    parser.add_argument('--langs', '-l', dest='langs', nargs=1,
+    parser.add_argument('--langs', '-l', dest='langs', 
                         default='all', metavar='lang1[,lang2,...]',
                         help='comma separated list of languages to search '
                         'sorted most preferred to least preferred')
@@ -69,7 +69,6 @@ def main(argv=None):
         else:
             files.append(location)
             
-    print files
     sorter = DefaultSorter if args.ignore_names \
              else SimilaritySorter(args.langs)
     downloader = Downloader(args.langs, sorter=sorter, 

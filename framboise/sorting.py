@@ -9,15 +9,13 @@ def find(list, value):
         
 class DefaultSorter(object):
     def __init__(self, langs='all', weight=1):
-        print "Available languages: ", langs
+        logging.info("Available languages: {}".format(langs))
         self.langs = langs.split(',')
  
-
     def bestfn(self, subentry):
         idx = find(self.langs, subentry['SubLanguageID'])
         value = idx if idx is not None else len(self.langs)
         return value
-
 
 def _similarity(a, b):
     make_pairs = lambda l: (l[i:i+1] for i in xrange(len(l)-1))

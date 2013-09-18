@@ -12,7 +12,7 @@ import chksum
 from sorting import DefaultSorter
 from util import map_
 
-USER_AGENT = 'OS Test User Agent'
+USER_AGENT = 'framboise v0.1'
 XMLRPC_URI = 'http://api.opensubtitles.org/xml-rpc'
 STYPES = ['aqt', 'jss', 'sub', 'ttxt', 'pjs', 'psb', 'rt', 'smi', 'ssf', 
           'srt', 'gsub', 'ssa', 'ass', 'usf', 'stl']
@@ -40,7 +40,6 @@ class Downloader():
         self.sorter = sorter if sorter is not None else DefaultSorter(langs)
         
         self.logged_in = False
-        logging.basicConfig(level=logging.INFO)
         
     def __log_in__(self):
         self.server = xmlrpclib.ServerProxy(XMLRPC_URI)
@@ -85,7 +84,7 @@ class Downloader():
             filter(None,
                    [file_root,prefix,subtitle['SubFormat']]))
 
-        print "Found subtitle in {lang} for movie {mn}:\n {link} => {d}"\
+        print "Found subtitle in {lang} for movie {mn}:\n{link} =>\n    {d}"\
             .format(lang=subtitle['LanguageName'], mn=subtitle['MovieName'],
                     link=subtitle['SubDownloadLink'], 
                     d=file_name)
@@ -104,8 +103,6 @@ class Downloader():
 
         if any(map(os.path.exists, 
                    (file_root + '.' + subext for subext in STYPES))):
-            logging.warning("Subtitle exists for movie {}".format(
-                os.path.basename(movie_file)))
             print "Subtitle exists for movie {}".format(
                 os.path.basename(movie_file))
             file_exists = True
@@ -127,5 +124,6 @@ class Downloader():
         best = min(results, key=self.sorter.bestfn)
         if not file_exists or self.overwrite:
             self.save_subtitle(best, file_root)
+            
 
 
