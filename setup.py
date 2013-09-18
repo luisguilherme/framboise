@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='framboise',
-      version='0.1.1',
+      version='0.2',
       description='Utility to download subtitles from opensubtitles.org',
       url='https://github.com/luisguilherme/framboise',
       author='Luis Guilherme Pereira',

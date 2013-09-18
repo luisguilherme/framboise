@@ -12,7 +12,7 @@ import chksum
 from sorting import DefaultSorter
 from util import map_
 
-USER_AGENT = 'framboise v0.1'
+USER_AGENT = 'framboise v0.2'
 XMLRPC_URI = 'http://api.opensubtitles.org/xml-rpc'
 STYPES = ['aqt', 'jss', 'sub', 'ttxt', 'pjs', 'psb', 'rt', 'smi', 'ssf', 
           'srt', 'gsub', 'ssa', 'ass', 'usf', 'stl']
@@ -52,7 +52,11 @@ class Downloader():
         
         self.token = login['token']
         logging.info("Logged in with token {}".format(self.token))
-        self.logged_in = True        
+        self.logged_in = True 
+
+    def __exit__(self):
+        if self.logged_in:
+            self.server.LogOut(self.token)
 
     def require_login(f):
         def wrapper(self, *args, **kwargs):
